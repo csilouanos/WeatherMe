@@ -19,6 +19,7 @@ class WeatherMeApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         configureKoin()
+        AppDatabase.init(this)
     }
 
     @ExperimentalCoroutinesApi
@@ -33,10 +34,4 @@ class WeatherMeApplication : Application() {
         lateinit var shared: WeatherMeApplication
             private set
     }
-
-    val database = Room.databaseBuilder(
-        applicationContext,
-        AppDatabase::class.java, "weather-db"
-    ).enableMultiInstanceInvalidation()
-        .build()
 }

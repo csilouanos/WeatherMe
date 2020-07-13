@@ -19,7 +19,6 @@ class MainActivity: AppCompatActivity() {
         //TODO: Configure layout.
 
         configureObservers()
-        viewModel.getWeather("")
     }
 
     private fun configureObservers() {

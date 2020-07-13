@@ -1,5 +1,7 @@
 package com.example.weatherme.mvvm.repositories
 
+import android.app.Application
+import com.example.weatherme.database.AppDatabase
 import com.example.weatherme.database.Weather
 import com.example.weatherme.models.CityWeatherResponse
 import com.example.weatherme.models.Weatherable
@@ -14,7 +16,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalCoroutinesApi
-class WeatherRepository(private val application: WeatherMeApplication) {
+class WeatherRepository(private val application: Application) {
 //    fun getWeather(city: String): Deferred<CityResponse> {
 //        return NetworkManager.shared.networkService.getWeatherByCity(city)
 //    }
@@ -28,14 +30,14 @@ class WeatherRepository(private val application: WeatherMeApplication) {
 
     fun getWeatherFromDB(city: String): Flow<List<Weather>> {
         return flow {
-            val weather = application.database.weatherDao().findByCityName(city)
+            val weather = AppDatabase.shared.weatherDao().findByCityName(city)
             emit(weather)
         }.flowOn(Dispatchers.IO)
     }
 
     fun getAllCities(): Flow<List<Weather>> {
         return flow {
-            val weather = application.database.weatherDao().getAll()
+            val weather = AppDatabase.shared.weatherDao().getAll()
             emit(weather)
         }/*.distinctUntilChanged()*/.flowOn(Dispatchers.IO)
     }
@@ -43,7 +45,7 @@ class WeatherRepository(private val application: WeatherMeApplication) {
     suspend fun saveWeatherEntry(weather: CityWeatherResponse) {
         weather.run {
             val dbWeather = Weather.generateDBObject(weather)
-            application.database.weatherDao().insertWeather(dbWeather)
+            AppDatabase.shared.weatherDao().insertWeather(dbWeather)
         }
     }
 }

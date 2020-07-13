@@ -18,7 +18,7 @@ data class Weather(
 ) : WeatherableDetails, Weatherable {
 
     @PrimaryKey(autoGenerate = true)
-    val wid: Int = 0
+    var wid: Int = 0
 
     override val titleName: String
         get() = name

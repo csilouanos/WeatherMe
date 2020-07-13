@@ -37,14 +37,10 @@ class MainViewModel(application: Application, private val repository: WeatherRep
     }
 
     init {
+        getWeather("nic")
     }
 
     fun getWeather(city: String) {
-//        viewModelScope.launch {
-//            val weatherDeferred = repository.getWeather(city).await()
-//            _cityWeatherLiveData.value = weatherDeferred
-//        }
-
         viewModelScope.launch {
             repository.getWeather(city)
                 .onStart {
@@ -70,6 +66,7 @@ class MainViewModel(application: Application, private val repository: WeatherRep
                 }
                 .collect {
                     _cityWeatherLiveData.value = it
+                    repository.saveWeatherEntry(it)
                 }
 
             repository.getAllCities()
