@@ -3,9 +3,12 @@ package com.example.weatherme.mvvm.view_models
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
+import com.example.weatherme.database.Weather
 import com.example.weatherme.models.WeatherErrorResponder
+import com.example.weatherme.models.Weatherable
 import com.example.weatherme.models.WeatherableDetails
 import com.example.weatherme.mvvm.repositories.WeatherRepository
+import com.example.weatherme.vendor.SingleLiveEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -15,11 +18,18 @@ import retrofit2.HttpException
 class MainViewModel(application: Application, private val repository: WeatherRepository) :
     AndroidViewModel(application) {
 
-    val cityWeatherLiveData: LiveData<WeatherableDetails>
-        get() = _cityWeatherLiveData
+    val liveCityWeatherLiveData: LiveData<List<Weatherable>>
+        get() = _liveCityWeatherLiveData
 
-    private val _cityWeatherLiveData by lazy {
-        MutableLiveData<WeatherableDetails>()
+    private val _liveCityWeatherLiveData by lazy {
+        SingleLiveEvent<List<Weatherable>>()
+    }
+
+    val savedCitiesWeatherLiveData: LiveData<List<WeatherableDetails>>
+        get() = _savedCitiesWeatherLiveData
+
+    private val _savedCitiesWeatherLiveData by lazy {
+        MutableLiveData<List<WeatherableDetails>>()
     }
 
     val isLoadingLiveData: LiveData<Boolean>
@@ -36,12 +46,19 @@ class MainViewModel(application: Application, private val repository: WeatherRep
         MutableLiveData<String>()
     }
 
-    init {
-        getWeather("nic")
+    val shouldShowSearchForCityLiveData: LiveData<Boolean>
+        get() = _shouldShowSearchForCityLiveData
+
+    private val _shouldShowSearchForCityLiveData by lazy {
+        SingleLiveEvent<Boolean>()
     }
 
-    fun getWeather(city: String) {
+    init {
+    }
+
+    fun searchCityWeather(city: String) {
         viewModelScope.launch {
+            Log.d(TAG, "Execute launch")
             repository.getWeather(city)
                 .onStart {
                     _isLoadingLiveData.value = true
@@ -59,20 +76,51 @@ class MainViewModel(application: Application, private val repository: WeatherRep
                     }
 
                     Log.e(TAG, "Error message ${exception.localizedMessage}")
-                    if(exception is HttpException) {
+                    if (exception is HttpException) {
                         val errorMessage = exception.response()?.errorBody()?.string() ?: ""
                         Log.d(TAG, "Exception response $errorMessage")
                     }
                 }
                 .collect {
-                    _cityWeatherLiveData.value = it
-                    repository.saveWeatherEntry(it)
+                    repository.insertWeatherEntry(it)
+
+                    repository.findNonSavedCitiesFromDB(city)
+                        .collect { cities ->
+                            cities.forEach {
+                                Log.d(TAG, "Non saved city ${it.name} ${it.isSaved}")
+                            }
+                            _liveCityWeatherLiveData.value = cities
+                        }
                 }
 
-            repository.getAllCities()
+        }
+    }
+
+    fun getLatestSavedCities() {
+        viewModelScope.launch {
+            repository.findSavedCitiesFromDB()
                 .collect {
-                Log.d(TAG, "All cities count ${it.size}")
-            }
+                    _savedCitiesWeatherLiveData.value = it
+                }
+        }
+    }
+
+    fun saveCity(city: Weatherable) {
+        viewModelScope.launch {
+            val weather = city as Weather
+            repository.markEntryAsSaved(weather)
+            dismissSearchForCityView()
+        }
+    }
+
+    fun showSearchForCityView() {
+        _shouldShowSearchForCityLiveData.value = true
+    }
+
+    fun dismissSearchForCityView() {
+        val isSearchForCityVisible = _shouldShowSearchForCityLiveData.value ?: false
+        if (isSearchForCityVisible) {
+            _shouldShowSearchForCityLiveData.value = false
         }
     }
 

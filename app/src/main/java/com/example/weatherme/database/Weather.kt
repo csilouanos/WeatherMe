@@ -9,16 +9,14 @@ import com.example.weatherme.models.WeatherableDetails
 
 @Entity
 data class Weather(
-    @ColumnInfo(name = "name") val name: String,
+    @PrimaryKey @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "country") val country: String,
     @ColumnInfo(name = "weather_condition") val weatherCondition: String,
     @ColumnInfo(name = "weather_condition_icon") val weatherConditionIcon: String,
     @ColumnInfo(name = "weather_celsius") val weatherCelsius: Double,
-    @ColumnInfo(name = "humidity") val humidity: Int
+    @ColumnInfo(name = "humidity") val humidity: Int,
+    @ColumnInfo(name = "is_saved") val isSaved: Boolean = false
 ) : WeatherableDetails, Weatherable {
-
-    @PrimaryKey(autoGenerate = true)
-    var wid: Int = 0
 
     override val titleName: String
         get() = name
@@ -30,13 +28,13 @@ data class Weather(
         get() = weatherCondition
 
     override val icon: String
-        get() = weatherConditionIcon
+        get() = "http:$weatherConditionIcon"
 
     override val temperature: String
-        get() = weatherCelsius.toString() //TODO: Format.
+        get() = "${weatherCelsius}°C"
 
     override val humidityDescription: String
-        get() = humidity.toString() //TODO: Format.
+        get() = "$humidity%"
 
     companion object {
         private val TAG = Weather::class.simpleName

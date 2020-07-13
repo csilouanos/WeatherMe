@@ -4,10 +4,7 @@ import android.app.Application
 import com.example.weatherme.database.AppDatabase
 import com.example.weatherme.database.Weather
 import com.example.weatherme.models.CityWeatherResponse
-import com.example.weatherme.models.Weatherable
-import com.example.weatherme.models.WeatherableDetails
 import com.example.weatherme.network.NetworkManager
-import com.example.weatherme.utils.WeatherMeApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -17,9 +14,6 @@ import kotlinx.coroutines.flow.flowOn
 
 @ExperimentalCoroutinesApi
 class WeatherRepository(private val application: Application) {
-//    fun getWeather(city: String): Deferred<CityResponse> {
-//        return NetworkManager.shared.networkService.getWeatherByCity(city)
-//    }
 
     fun getWeather(city: String): Flow<CityWeatherResponse> {
         return flow {
@@ -28,24 +22,44 @@ class WeatherRepository(private val application: Application) {
         }.flowOn(Dispatchers.IO) //Dispatchers.IO indicates that this coroutine should be executed on a thread reserved for I/O operations.
     }
 
-    fun getWeatherFromDB(city: String): Flow<List<Weather>> {
+    fun findNonSavedCitiesFromDB(city: String): Flow<List<Weather>> {
         return flow {
-            val weather = AppDatabase.shared.weatherDao().findByCityName(city)
+            val weather = AppDatabase.shared.weatherDao().findNonSavedCities(city)
+            emit(weather)
+        }.distinctUntilChanged().flowOn(Dispatchers.IO)
+    }
+
+    fun findSavedCitiesFromDB(): Flow<List<Weather>> {
+        return flow {
+            val weather = AppDatabase.shared.weatherDao().findAllSavedCities()
             emit(weather)
         }.flowOn(Dispatchers.IO)
     }
 
-    fun getAllCities(): Flow<List<Weather>> {
+    fun getAllCities() : Flow<List<Weather>> {
         return flow {
             val weather = AppDatabase.shared.weatherDao().getAll()
             emit(weather)
-        }/*.distinctUntilChanged()*/.flowOn(Dispatchers.IO)
+        }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun saveWeatherEntry(weather: CityWeatherResponse) {
+//    fun getAllCities(): Flow<List<Weather>> {
+//        return flow {
+//            val weather = AppDatabase.shared.weatherDao().getAll()
+//            emit(weather)
+//        }/*.distinctUntilChanged()*/.flowOn(Dispatchers.IO)
+//    }
+
+    suspend fun insertWeatherEntry(weather: CityWeatherResponse) {
         weather.run {
             val dbWeather = Weather.generateDBObject(weather)
-            AppDatabase.shared.weatherDao().insertWeather(dbWeather)
+            AppDatabase.shared.weatherDao().insertOrUpdate(dbWeather)
         }
     }
+
+    suspend fun markEntryAsSaved(weather: Weather) {
+        AppDatabase.shared.weatherDao().setSaved(weather.name)
+    }
+
+
 }
