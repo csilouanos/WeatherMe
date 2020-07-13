@@ -1,5 +1,6 @@
 package com.example.weatherme.database
 
+import android.util.Log
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
@@ -8,7 +9,7 @@ interface WeatherDao {
     @Query("SELECT * FROM weather")
     suspend fun getAll(): List<Weather>
 
-    @Query("SELECT * FROM weather WHERE name=:cityName")
+    @Query("SELECT * FROM weather WHERE name=:cityName LIMIT 1")
     suspend fun findByCityName(cityName: String): List<Weather>
 
     @Query("SELECT * FROM weather WHERE LOWER(name) LIKE '%' || LOWER(:cityName) || '%' AND is_saved=0")
@@ -31,7 +32,12 @@ interface WeatherDao {
         if(entries.isEmpty()) {
             insertWeather(weather)
         } else {
-            updateWeather(weather)
+            val entry = weather.apply { isSaved = entries.first().isSaved }
+            updateWeather(entry)
         }
+    }
+
+    companion object {
+        private val TAG = WeatherDao::class.simpleName
     }
 }

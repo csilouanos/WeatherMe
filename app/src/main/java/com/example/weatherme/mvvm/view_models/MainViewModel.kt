@@ -58,7 +58,6 @@ class MainViewModel(application: Application, private val repository: WeatherRep
 
     fun searchCityWeather(city: String) {
         viewModelScope.launch {
-            Log.d(TAG, "Execute launch")
             repository.getWeather(city)
                 .onStart {
                     _isLoadingLiveData.value = true
@@ -66,23 +65,21 @@ class MainViewModel(application: Application, private val repository: WeatherRep
                 .onCompletion {
                     _isLoadingLiveData.value = false
                 }
-                //TODO: Create an extension to get the server errors.
                 .catch { exception ->
-                    Log.d(TAG, "Real exception $exception")
                     WeatherErrorResponder(exception).errorMessage?.let {
                         _errorMessageLiveData.value = it
                     } ?: run {
-                        //TODO: Maybe send empty list here.
+                        _liveCityWeatherLiveData.value = listOf()
                     }
 
-                    Log.e(TAG, "Error message ${exception.localizedMessage}")
                     if (exception is HttpException) {
                         val errorMessage = exception.response()?.errorBody()?.string() ?: ""
-                        Log.d(TAG, "Exception response $errorMessage")
+                        Log.e(TAG, "Exception response $errorMessage")
                     }
                 }
                 .collect {
-                    repository.insertWeatherEntry(it)
+
+                    repository.insertOrUpdateWeatherEntry(it)
 
                     repository.findNonSavedCitiesFromDB(city)
                         .collect { cities ->

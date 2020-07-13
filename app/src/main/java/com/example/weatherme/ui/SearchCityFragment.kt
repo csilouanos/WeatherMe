@@ -38,6 +38,10 @@ class SearchCityFragment: ViewBindingFragment<FragmentSearchCityBinding>() {
         viewModel.liveCityWeatherLiveData.observe(viewLifecycleOwner, Observer { cities ->
             adapter.refreshData(ArrayList(cities))
         })
+
+        viewModel.isLoadingLiveData.observe(viewLifecycleOwner, Observer { isLoading ->
+            binding.swipeRefreshLayout.isRefreshing = isLoading
+        })
     }
 
     private fun configureElements() {
@@ -53,6 +57,14 @@ class SearchCityFragment: ViewBindingFragment<FragmentSearchCityBinding>() {
                 viewModel.saveCity(selectedItem)
             }.also {
                 recyclerView.adapter = it
+            }
+
+            swipeRefreshLayout.setOnRefreshListener {
+                val text = searchEditText.text?.toString() ?: run {
+                    swipeRefreshLayout.isRefreshing = false
+                    return@setOnRefreshListener
+                }
+                viewModel.searchCityWeather(text)
             }
         }
     }

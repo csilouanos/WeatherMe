@@ -21,7 +21,6 @@ class MainActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         configureBinding()
         loadInitialFragment()
-        configureElements()
         configureObservers()
     }
 
@@ -34,14 +33,7 @@ class MainActivity: AppCompatActivity() {
         setContentView(binding.root)
     }
 
-    private fun configureElements() {
-
-    }
-
     private fun configureObservers() {
-        viewModel.isLoadingLiveData.observe(this, Observer {
-            Log.d(TAG, "is loading $it")
-        })
 
         viewModel.errorMessageLiveData.observe(this, Observer { errorMessage ->
             Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()

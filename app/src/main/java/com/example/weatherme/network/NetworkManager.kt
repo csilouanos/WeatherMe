@@ -26,42 +26,24 @@ class NetworkManager {
         val shared = NetworkManager()
     }
 
-    init {
-    }
-
     private fun generateOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(generateLoggingInterceptor())
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
                 val originalHttpUrl = chain.request().url
-                val url = originalHttpUrl.newBuilder().addQueryParameter("key", Keys.API_KEY).build()
+                val url =
+                    originalHttpUrl.newBuilder().addQueryParameter("key", Keys.API_KEY).build()
                 request.url(url)
                 return@addInterceptor chain.proceed(request.build())
             }
             .build()
     }
-}
 
     private fun generateLoggingInterceptor(): HttpLoggingInterceptor {
-       return HttpLoggingInterceptor().apply {
+        return HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
+        }
     }
-
-//    public static  <S> S createService(Class<S> serviceClass, String baseUrl) {
-//
-//
-//        Retrofit builder = new Retrofit.Builder()
-//            .baseUrl(baseUrl)
-//            .addConverterFactory(GsonConverterFactory.create())
-//            .build();
-//
-//        RestAdapter adapter = builder.build();*/
-//
-//        return  builder.create(serviceClass);
-//    }
-
-
-
-
 }
+

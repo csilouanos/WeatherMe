@@ -9,7 +9,6 @@ import androidx.room.RoomDatabase
 abstract class AppDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
 
-
     companion object {
         // Singleton prevents multiple instances of database opening at the
         // same time.
@@ -33,22 +32,6 @@ abstract class AppDatabase : RoomDatabase() {
                 appDatabase = instance
             }
         }
-
-        //TODO: Remove that later.
-//        fun getDatabase(context: Context): AppDatabase {
-//            val tempInstance = shared
-//            if (tempInstance != null) {
-//                return tempInstance
-//            }
-//            synchronized(this) {
-//                val instance = Room.databaseBuilder(
-//                    context.applicationContext,
-//                    AppDatabase::class.java, "weather-db"
-//                ).build()
-//                shared = instance
-//                return instance
-//            }
-//        }
     }
 
 }

@@ -15,7 +15,7 @@ data class Weather(
     @ColumnInfo(name = "weather_condition_icon") val weatherConditionIcon: String,
     @ColumnInfo(name = "weather_celsius") val weatherCelsius: Double,
     @ColumnInfo(name = "humidity") val humidity: Int,
-    @ColumnInfo(name = "is_saved") val isSaved: Boolean = false
+    @ColumnInfo(name = "is_saved") var isSaved: Boolean = false
 ) : WeatherableDetails, Weatherable {
 
     override val titleName: String

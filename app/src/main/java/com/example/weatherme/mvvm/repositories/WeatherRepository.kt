@@ -43,14 +43,7 @@ class WeatherRepository(private val application: Application) {
         }.flowOn(Dispatchers.IO)
     }
 
-//    fun getAllCities(): Flow<List<Weather>> {
-//        return flow {
-//            val weather = AppDatabase.shared.weatherDao().getAll()
-//            emit(weather)
-//        }/*.distinctUntilChanged()*/.flowOn(Dispatchers.IO)
-//    }
-
-    suspend fun insertWeatherEntry(weather: CityWeatherResponse) {
+    suspend fun insertOrUpdateWeatherEntry(weather: CityWeatherResponse) {
         weather.run {
             val dbWeather = Weather.generateDBObject(weather)
             AppDatabase.shared.weatherDao().insertOrUpdate(dbWeather)
@@ -60,6 +53,4 @@ class WeatherRepository(private val application: Application) {
     suspend fun markEntryAsSaved(weather: Weather) {
         AppDatabase.shared.weatherDao().setSaved(weather.name)
     }
-
-
 }
