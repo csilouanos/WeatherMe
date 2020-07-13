@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WeatherMe</string>
+    <string name="unknown_exception_error">Network error. Please try again later.</string>
+</resources>
